@@ -13,6 +13,8 @@ public class Quadrado {
     public String slotValor = "Place Holder";
     public String pointer;
     public String type;
+    public int[] pointsSlot = {0,0,0,0};
+
     Quadrado(PApplet pa, float parametro) {
         this.p = pa;
         this.parametro = parametro;
@@ -44,8 +46,14 @@ public class Quadrado {
         p.rect(x+ladoQuadrado/3, y+(ladoQuadrado/2)+dentroEspaco*3.7f, ladoQuadrado/2, p.round(ladoQuadrado*0.06f), p.round(ladoQuadrado*0.06f));
         p.fill(255);
         p.text(slotValor, x+p.round((ladoQuadrado/3 + (ladoQuadrado/2)/2)), y+p.round((ladoQuadrado/2)+dentroEspaco*3.7f + (ladoQuadrado*0.06f)/2 ));
+        getPoints(x,y);
     }
 
-
+    public void getPoints(int x, int y) {
+        pointsSlot[0] = p.round(x+ladoQuadrado/3);
+        pointsSlot[1] = p.round(y+(ladoQuadrado/2)+dentroEspaco*3.7f);
+        pointsSlot[2] = p.round(ladoQuadrado/2);
+        pointsSlot[3] = p.round(ladoQuadrado*0.06f);
+    }
 
 }

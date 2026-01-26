@@ -21,6 +21,7 @@ public class Main extends PApplet {
     Server server = new Server();
     String data;
     int page = 0;
+    int quadradoEditado = 0;
     public static void main(String[] args) {
         PApplet.main("interfaceUsuario.Main");
     }
@@ -95,8 +96,21 @@ public class Main extends PApplet {
         if(isWithin(pontoInicialBotao[0], pontoInicialBotao[1] ,altura-tamBotao,  altura)){
             if(page>0)page--;
         }
+        if(mousePressed)digitaDadao();
     }
 
+    void digitaDadao(){
+        for(int i = 0; i < quantQuadrados; i++){
+            if(isWithin(
+            quadrados.get(i).pointsSlot[0],
+            quadrados.get(i).pointsSlot[1],
+            quadrados.get(i).pointsSlot[2],
+            quadrados.get(i).pointsSlot[3]
+            )) {
+                quadradoEditado = i;
+            }
+        }
+    }
 
 
     void desenhaBotao(){
@@ -146,7 +160,8 @@ public class Main extends PApplet {
 
     //PRECISA SER ADAPTADO PARA O USO NESSE CÓDIGO!!!
     public void keyPressed() { // metodo que detecta digitação
-        String text = "";
+        if(quadradoEditado == -1) return;
+        String text = quadrados.get(quadradoEditado).slotValor;
         if (key == BACKSPACE) {
             if (text.length() > 0) {
                 //aqui uma forma desnecessariamente complicada de apagar o ultimo caracter escrito
@@ -159,9 +174,17 @@ public class Main extends PApplet {
             }
         }else if (key != ESC) {
             text = text + key;
+        }else if(key == ESC){
+            quadradoEditado = -1;
         }
+        quadrados.get(quadradoEditado).slotValor = text;
     }//detecta a tecla pressionada
+
 }
+
+
+
+
 /*
 
 package src.Interface;
