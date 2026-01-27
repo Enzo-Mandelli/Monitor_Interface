@@ -20,7 +20,9 @@ public class Main extends PApplet {
     int quantMonitor = 1;
     Server server = new Server();
     String data;
-    int page = 0;
+    int page = 1;
+    int totalPorPagina = 9; // 3x3
+    int inicioIndice = page * totalPorPagina;
     int quadradoEditado = 0;
     public static void main(String[] args) {
         PApplet.main("interfaceUsuario.Main");
@@ -53,7 +55,7 @@ public class Main extends PApplet {
         String[] tipos = DataFiltering.sliceStr(dados,2);
         String[] ponteiros = DataFiltering.sliceStr(dados,3);
         for(int i = 0; i < quantQuadrados; i++){
-            quadrados.add(quadrado);
+            quadrados.add(new Quadrado(this, 0.6f));
             quadrados.get(i).nomeVar = nomes[i];
             quadrados.get(i).valorVar = valor[i];
             quadrados.get(i).type = tipos[i];
@@ -75,37 +77,49 @@ public class Main extends PApplet {
         rect((largura-round(largura*0.2f)), 0, largura*0.2f, altura);
         desenhaBotao();
         int cont = 0;
-        for(int i = 1; i < 4; i++) {
-            for (int j = 1; j < 4; j++) {
-                cont++;
-                if(cont < quadrados.size()) {
-                    if (i != 1) {
-                        quadrados.get(cont+page*3).display(margemQuadrado * i, alturaUtil);
-                    } else if (j != 1) {
-                        quadrados.get(cont+page*3).display(margemQuadrado * i + quadrado.ladoQuadrado * i - 1, alturaUtil);
-                    } else {
-                        quadrados.get(cont+page*3).display(margemQuadrado * i + quadrado.ladoQuadrado * i - 1, alturaUtil + quadrado.ladoQuadrado * j + margemQuadrado * j);
-                    }
+        for (int j = 0; j < 3; j++) { // Linhas
+            for (int i = 0; i < 3; i++) { // Colunas
+
+                int indiceAtual = inicioIndice + (j * 3 + i);
+
+                if (indiceAtual < quadrados.size()) {
+                    // Cálculo do X: Margem inicial + (i * (Lado + Espaçamento))
+                    int posX = margemQuadrado + (i * (quadrado.ladoQuadrado + margemQuadrado));
+
+                    // Cálculo do Y: Altura inicial + (j * (Lado + Espaçamento))
+                    int posY = alturaUtil + (j * (quadrado.ladoQuadrado + margemQuadrado));
+
+                    // Renderização
+                    quadrados.get(indiceAtual).display(posX, posY);
+
                 }
-                debug();
             }
         }
+
+        if(mousePressed){
+            digitaDadao();
+            clicaBotao();
+        }
+    }
+
+    void clicaBotao(){
         if(isWithin(pontoInicialBotao[0], pontoInicialBotao[1] ,pontoInicialBotao[0]+tamBotao,  pontoInicialBotao[1] + tamBotao)){
             if(9+page*3 < quantQuadrados)page++;
         }
-        if(isWithin(pontoInicialBotao[0], pontoInicialBotao[1] ,altura-tamBotao,  altura)){
+        if(isWithin(pontoInicialBotao[0], altura-tamBotao, pontoInicialBotao[0] + tamBotao,  altura)){
             if(page>0)page--;
         }
-        if(mousePressed)digitaDadao();
     }
 
     void digitaDadao(){
         for(int i = 0; i < quantQuadrados; i++){
+            int[] pointsSlot = quadrados.get(i).getPoints();
+            System.out.println(pointsSlot[2] + " " + pointsSlot[3]);
             if(isWithin(
-            quadrados.get(i).pointsSlot[0],
-            quadrados.get(i).pointsSlot[1],
-            quadrados.get(i).pointsSlot[2],
-            quadrados.get(i).pointsSlot[3]
+            pointsSlot[0],
+            pointsSlot[1],
+            pointsSlot[2],
+            pointsSlot[3]
             )) {
                 quadradoEditado = i;
             }
@@ -143,7 +157,7 @@ public class Main extends PApplet {
 
     boolean isWithin(int x1, int y1, int x2, int y2){
         boolean isWithin = false;
-        if(mouseX > x1 && mouseX < x2 && mouseY > y1 && mouseY < y2) isWithin = true;
+        if((mouseX > x1 && mouseX < x2) && (mouseY > y1 && mouseY < y2)) isWithin = true;
         return isWithin;
     }
 

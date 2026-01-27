@@ -13,7 +13,8 @@ public class Quadrado {
     public String slotValor = "Place Holder";
     public String pointer;
     public String type;
-    public int[] pointsSlot = {0,0,0,0};
+    int x;
+    int y;
 
     Quadrado(PApplet pa, float parametro) {
         this.p = pa;
@@ -25,6 +26,8 @@ public class Quadrado {
     }
 
     public void display(int x, int y) {
+        this.x = x;
+        this.y = y;
         p.textSize(p.round(ladoQuadrado*0.15f));
         dentroEspaco = p.round(ladoQuadrado*0.1f);
         p.fill(0);
@@ -46,14 +49,15 @@ public class Quadrado {
         p.rect(x+ladoQuadrado/3, y+(ladoQuadrado/2)+dentroEspaco*3.7f, ladoQuadrado/2, p.round(ladoQuadrado*0.06f), p.round(ladoQuadrado*0.06f));
         p.fill(255);
         p.text(slotValor, x+p.round((ladoQuadrado/3 + (ladoQuadrado/2)/2)), y+p.round((ladoQuadrado/2)+dentroEspaco*3.7f + (ladoQuadrado*0.06f)/2 ));
-        getPoints(x,y);
     }
 
-    public void getPoints(int x, int y) {
-        pointsSlot[0] = p.round(x+ladoQuadrado/3);
-        pointsSlot[1] = p.round(y+(ladoQuadrado/2)+dentroEspaco*3.7f);
-        pointsSlot[2] = p.round(ladoQuadrado/2);
-        pointsSlot[3] = p.round(ladoQuadrado*0.06f);
+    public int[] getPoints() {
+        int[] pts = new int[4];
+        pts[0] = p.round(x+ladoQuadrado/3);
+        pts[1] = p.round(y+(ladoQuadrado/2)+dentroEspaco*3.7f);
+        pts[2] = p.round(ladoQuadrado/2);
+        pts[3] = p.round(ladoQuadrado*0.06f);
+        return pts;
     }
 
 }
