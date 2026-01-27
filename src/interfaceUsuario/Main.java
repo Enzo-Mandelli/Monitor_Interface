@@ -46,7 +46,7 @@ public class Main extends PApplet {
         logoError = loadImage("src/interfaceUsuario/resources/logoError.jpg");
         quadrado = new Quadrado(this, 0.6f);
         textFont(fonte);
-        while(Var.clienteConectado) server.serverTCP(); //garante que só inicia ao conectar
+        while(!Var.clienteConectado) server.serverTCP(); //garante que só inicia ao conectar
         data = server.getData();
         quantQuadrados = DataFiltering.contVar(data);
     }
@@ -73,11 +73,6 @@ public class Main extends PApplet {
 
     @Override
     public void draw() {
-        if(!unecessaryLoading.concluido){
-            unecessaryLoading.display();
-            if(!unecessaryLoading.check1 && unecessaryLoading.conectado)unecessaryLoading.printaPontosCPU();
-            if(unecessaryLoading.check1)unecessaryLoading.printaPontosGPU();
-        }else {
             if (Var.clienteConectado) {
                 updateQuadrados();
                 if (Var.clienteConectado) Server.serverUDP();
@@ -115,10 +110,6 @@ public class Main extends PApplet {
                     clicaBotao();
                 }
             }
-        }
-        if(!Var.clienteConectado && unecessaryLoading.concluido){
-            unecessaryLoading.disconnect(logoError);
-        }
     }
 
     void clicaBotao(){

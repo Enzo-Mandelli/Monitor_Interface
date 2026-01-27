@@ -6,7 +6,7 @@ import java.net.Socket;
 
 
 public class Var {
-    public static boolean clienteConectado = false;
+    public static boolean clienteConectado = true;
     public static int portUDP = 9192; // A mesma porta configurada no ESP32
     public static int portTCP = 9394;
     public static Socket currentClientSocket;
