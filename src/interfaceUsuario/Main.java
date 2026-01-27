@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import server.*;
 public class Main extends PApplet {
     public PFont fonte;
+    PImage logoError;
     int largura = displayWidth;
     int altura = width;
     String debuga = "x: " + mouseX + " y: " + mouseY;
@@ -20,10 +21,13 @@ public class Main extends PApplet {
     int quantMonitor = 1;
     Server server = new Server();
     String data;
+    int[] backgroundColor = {0,0,0};
+    int[] textColor = {255,255,255};
     int page = 1;
     int totalPorPagina = 9; // 3x3
     int inicioIndice = page * totalPorPagina;
     int quadradoEditado = 0;
+    UnecessaryLoading unecessaryLoading = new UnecessaryLoading(this, backgroundColor, textColor, altura, largura);
     public static void main(String[] args) {
         PApplet.main("interfaceUsuario.Main");
     }
@@ -39,6 +43,7 @@ public class Main extends PApplet {
     @Override
     public void setup() {
         fonte = createFont("src/interfaceUsuario/resources/fonteUltrakill.ttf", 16);
+        logoError = loadImage("src/interfaceUsuario/resources/logoError.jpg");
         quadrado = new Quadrado(this, 0.6f);
         textFont(fonte);
         while(Var.clienteConectado) server.serverTCP(); //garante que só inicia ao conectar
@@ -55,7 +60,9 @@ public class Main extends PApplet {
         String[] tipos = DataFiltering.sliceStr(dados,2);
         String[] ponteiros = DataFiltering.sliceStr(dados,3);
         for(int i = 0; i < quantQuadrados; i++){
-            quadrados.add(new Quadrado(this, 0.6f));
+            if(quantQuadrados != quadrados.size()){
+                quadrados.add(new Quadrado(this, 0.6f));
+            }
             quadrados.get(i).nomeVar = nomes[i];
             quadrados.get(i).valorVar = valor[i];
             quadrados.get(i).type = tipos[i];
@@ -66,39 +73,51 @@ public class Main extends PApplet {
 
     @Override
     public void draw() {
-        updateQuadrados();
+        if(!unecessaryLoading.concluido){
+            unecessaryLoading.display();
+            if(!unecessaryLoading.check1 && unecessaryLoading.conectado)unecessaryLoading.printaPontosCPU();
+            if(unecessaryLoading.check1)unecessaryLoading.printaPontosGPU();
+        }else {
+            if (Var.clienteConectado) {
+                updateQuadrados();
+                if (Var.clienteConectado) Server.serverUDP();
+                margemQuadrado = round(largura * 0.015f);
+                background(0, 0, 0);
+                fill(0);
+                stroke(255);
+                //rect(vertice superior esquedo x, vertice superior esquedo y, largura, altura)
+                rect((largura - round(largura * 0.2f)), 0, largura * 0.2f, altura);
+                desenhaBotao();
+                int cont = 0;
+                for (int j = 0; j < 3; j++) { // Linhas
+                    for (int i = 0; i < 3; i++) { // Colunas
+                        if (cont < quantQuadrados) {
+                            int indiceAtual = inicioIndice + (j * 3 + i);
 
-        if(Var.clienteConectado) Server.serverUDP();
-        margemQuadrado = round(largura*0.015f);
-        background(0,0,0);
-        fill(0);
-        stroke(255);
-        //rect(vertice superior esquedo x, vertice superior esquedo y, largura, altura)
-        rect((largura-round(largura*0.2f)), 0, largura*0.2f, altura);
-        desenhaBotao();
-        int cont = 0;
-        for (int j = 0; j < 3; j++) { // Linhas
-            for (int i = 0; i < 3; i++) { // Colunas
+                            if (indiceAtual < quadrados.size()) {
+                                // Cálculo do X: Margem inicial + (i * (Lado + Espaçamento))
+                                int posX = margemQuadrado + (i * (quadrado.ladoQuadrado + margemQuadrado));
 
-                int indiceAtual = inicioIndice + (j * 3 + i);
+                                // Cálculo do Y: Altura inicial + (j * (Lado + Espaçamento))
+                                int posY = alturaUtil + (j * (quadrado.ladoQuadrado + margemQuadrado));
 
-                if (indiceAtual < quadrados.size()) {
-                    // Cálculo do X: Margem inicial + (i * (Lado + Espaçamento))
-                    int posX = margemQuadrado + (i * (quadrado.ladoQuadrado + margemQuadrado));
+                                // Renderização
+                                quadrados.get(indiceAtual).display(posX, posY);
 
-                    // Cálculo do Y: Altura inicial + (j * (Lado + Espaçamento))
-                    int posY = alturaUtil + (j * (quadrado.ladoQuadrado + margemQuadrado));
+                            }
+                        }
+                        cont++;
+                    }
+                }
 
-                    // Renderização
-                    quadrados.get(indiceAtual).display(posX, posY);
-
+                if (mousePressed) {
+                    digitaDadao();
+                    clicaBotao();
                 }
             }
         }
-
-        if(mousePressed){
-            digitaDadao();
-            clicaBotao();
+        if(!Var.clienteConectado && unecessaryLoading.concluido){
+            unecessaryLoading.disconnect(logoError);
         }
     }
 

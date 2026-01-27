@@ -94,9 +94,6 @@ public class Server {
         }
     }
 
-    public static void setData(String data) {
-        dataToSend = data;
-    }
 
     public static void sendData(String data) {
         try {
