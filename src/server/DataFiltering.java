@@ -2,19 +2,32 @@ package server;
 
 public class DataFiltering {
     public static String[] sliceStr(String txt, int index){
-        String lista = "";
+        String list = "";
+        txt = txt.replace("[", "");
+        txt = txt.trim();
+        char aux = '\'';
+        int cont = 0;
+        String[] error = new String[5];
         try {
-            int cont = index + 1;
-            for (int i = 1; i < txt.length(); i++) {
-                if (txt.charAt(i) == (']')) cont++;
-                if (txt.charAt(i) != '[' && cont == index && txt.charAt(i) != ']') {
-                    lista = lista + txt.charAt(i);
+            for (int i = 0; i < txt.length(); i++) {
+                if(cont > index) break;
+                if (txt.charAt(i) == (']')){
+                    cont++;
+                    i++;
+                }
+                if(index == cont){
+                    txt = txt.replaceFirst(",", "");
+                    for(int j = i; j < txt.length(); j++){
+                        if(txt.charAt(j) == ']')break;
+                        list = list + txt.charAt(j);
+
+                    }
+                    return list.split(",");
                 }
             } //retorna a lista de itens em determinado index
         } catch (Exception e) {
-            System.out.println("erro no fatiamento");
         }
-        return lista.split(",");
+        return error = txt.split(",");
     }
 
 

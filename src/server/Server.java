@@ -12,26 +12,30 @@ public class Server {
      * Ao receber um "DISCOVER_SERVER", ele responde para o ESP32.
      */
     public static String dataToSend;
+    private static boolean udpRodando = false;
     private static boolean tcpRodando = false;
 
-    public static void iniciarSistema() {
+    public static void startSystem() {
+        if (!udpRodando) {
+            serverUDP();
+            udpRodando = true;
+        }
         // Inicia o TCP uma única vez
         if (!tcpRodando) {
             serverTCP();
             tcpRodando = true;
         }
-        // Inicia o UDP para descoberta
-        serverUDP();
     }
+
 
     public static void serverUDP() {
         // Use uma thread para o UDP também, para não travar o programa principal
         new Thread(() -> {
+
             try (DatagramSocket socket = new DatagramSocket(Var.portUDP)) {
                 socket.setBroadcast(true);
                 byte[] buffer = new byte[1024];
 
-                while (true) {
                     DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
                     socket.receive(packet);
                     String message = new String(packet.getData(), 0, packet.getLength());
@@ -47,10 +51,11 @@ public class Server {
 
                         // Guardamos o IP do ESP32 para usar no sendData depois
                         Var.ipDoEsp = packet.getAddress().getHostAddress();
+                        Var.clienteConectado = true;
                     }
-                }
             } catch (Exception e) {
                 e.printStackTrace();
+                udpRodando = false;
             }
         }).start();
     }
@@ -58,40 +63,35 @@ public class Server {
     public static void serverTCP() {
         new Thread(() -> {
             try (ServerSocket serverSocket = new ServerSocket(Var.portTCP)) {
-                while (!Thread.currentThread().isInterrupted()) {
-                    // Aceita o ESP32
+                System.out.println("foi");
+                while (true) {
                     Socket clientSocket = serverSocket.accept();
+                    Var.currentClientSocket = clientSocket;
                     Var.clienteConectado = true;
 
-                    // Salva o socket globalmente para o sendData poder usar depois!
-                    Var.currentClientSocket = clientSocket;
-
-                    new Thread(() -> handlesESP32(clientSocket)).start();
+                    // CRIA UMA THREAD DE LEITURA PERMANENTE
+                    new Thread(() -> {
+                        try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
+                            String line;
+                            while ((line = in.readLine()) != null) {
+                                Var.data = line; // Atualiza a variável global
+                            }
+                            if(Var.data == null) Var.clienteConectado = false;
+                        } catch (IOException e) {
+                            Var.clienteConectado = false;
+                        }
+                    }).start();
                 }
-            } catch (IOException e) { /* ... */ }
+            } catch (IOException e) {
+                Var.clienteConectado = false;
+                tcpRodando = false;
+            }
         }).start();
     }
 
+    // O getData agora só devolve o que a Thread de leitura já buscou
     public String getData() {
         return Var.data;
-    }
-
-    private static void handlesESP32(Socket clientSocket) {
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
-            System.out.println("Comunicação estável com: " + clientSocket.getInetAddress());
-            while ((Var.data = in.readLine()) != null) {
-
-                // Processa o dado recebido (ex: "0x3FF...;10.5;f")
-                // Se o ESP32 desconectar, o readLine retorna null e o loop acaba
-            }
-        } catch (IOException e) {
-            System.out.println("ESP32 desconectado: " + e.getMessage());
-        } finally {
-            try {
-                clientSocket.close();
-                Var.clienteConectado = false;
-            } catch (IOException e) { e.printStackTrace(); }
-        }
     }
 
 
