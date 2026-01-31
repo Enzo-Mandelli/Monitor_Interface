@@ -1,8 +1,9 @@
 package server;
 
-import java.io.IOException;
-import java.net.ServerSocket;
+import interfaceUsuario.Quadrado;
+
 import java.net.Socket;
+import java.util.ArrayList;
 
 
 public class Var {
@@ -10,9 +11,11 @@ public class Var {
     public static int portUDP = 9192; // A mesma porta configurada no ESP32
     public static int portTCP = 9394;
     public static Socket currentClientSocket;
-    public static String ipDoEsp = ""; // Preenchido pelo UDP
+    public static String ipEsp = ""; // Preenchido pelo UDP
     public static String data = "";
-
+    public static ArrayList<Quadrado> squares = new ArrayList<>();
+    public static boolean flag = false; // flag for the connection
+    public static short contFails = 0;
 
 
 }
