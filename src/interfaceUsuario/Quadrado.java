@@ -10,12 +10,13 @@ public class Quadrado {
     public int squareSize;
     public String varValue = "valor";
     public String varName = "Var";
-    public String sendValue = "Place Holder";
+    public String sendValue = "";
     public String pointer;
     public String type;
     int x; // offset X
     int y; // offset Y
     int halfSquare;
+    int index;
 
     Quadrado(PApplet pa, float proportion) {
         this.p = pa;
@@ -91,6 +92,7 @@ public class Quadrado {
     }
 
     public boolean isMouseOverSendData() {
+
         int textSize = p.round(squareSize *0.03f);
 
         float x1 = x + squareSize /5f - (3 * textSize);

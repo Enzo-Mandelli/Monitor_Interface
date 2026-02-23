@@ -50,38 +50,51 @@ public class Main extends PApplet {
     @Override
     public void setup() {
         server.startSystem();
-        fonte = createFont("src/interfaceUsuario/resources/fonteUltrakill.ttf", 16); //chose the font
+        try {
+            fonte = createFont("interfaceUsuario/fonteUltrakill.ttf", 16);
+            logoError = loadImage("src/interfaceUsuario/resources/logoError.jpg"); //chose the error image
+            logoError = loadImage(getClass().getResource("/interfaceUsuario/resources/logoError.jpg").getPath());
+            //chose the font
+        }catch(Exception e){
+            System.out.println("Arquivo de fonte não encontrado no JAR. Usando Arial.");
+            fonte = createFont("Arial", 16);
+        }
 
-        //currently the screen that has this image doesn't work
-        logoError = loadImage("src/interfaceUsuario/resources/logoError.jpg"); //chose the error image
-        
-        //===== set the fix values ===== 
+        //===== set the fix values =====
         margemQuadrado = round(windowWidth * 0.015f);
         windowMove(displayWidth/2 - windowWidth/2, displayHeight/50); // initialize the window close to centralised
         textFont(fonte);
     }
-    
-    public void updateQuadrados(){
-        //[names] + [values] + [types] + [pointer]
+
+    public void updateQuadrados() {
         data = server.getData();
-        if(data.isEmpty() || data.isBlank())return; // if the data is null doesn't update the data
-        //get the values of the squares
+        if (data.isEmpty() || data.isBlank()) return;
+
         quantSquares = DataFiltering.contVar(data);
-        String[] names = DataFiltering.sliceStr(data,0);
-        String[] values = DataFiltering.sliceStr(data,1);
-        String[] types = DataFiltering.sliceStr(data,2);
-        String[] pointers = DataFiltering.sliceStr(data,3);
-        //update de values of the squares
-        for(int i = 0; i < quantSquares; i++){
-            if(quantSquares != Var.squares.size()){
-                Var.squares.add(new Quadrado(this, 0.6f));
-            }
-            Var.squares.get(i).varName = names[i];
-            Var.squares.get(i).varValue = values[i];
-            Var.squares.get(i).type = types[i];
-            Var.squares.get(i).pointer = pointers[i];
+        String[] names = DataFiltering.sliceStr(data, 0);
+        if (names.length == 0)return;
+        String[] values = DataFiltering.sliceStr(data, 1);
+        if (values.length == 0)return;
+        String[] types = DataFiltering.sliceStr(data, 2);
+        if (types.length == 0)return;
+        String[] pointers = DataFiltering.sliceStr(data, 3);
+        if (pointers.length == 0)return;
+
+        while (Var.squares.size() < quantSquares) {
+            Var.squares.add(new Quadrado(this, 0.6f));
         }
-        
+
+        while (Var.squares.size() > quantSquares) {
+            Var.squares.remove(Var.squares.size() - 1);
+        }
+
+        for (int i = 0; i < quantSquares; i++) {
+            Quadrado q = Var.squares.get(i);
+            q.varName = names[i];
+            q.varValue = values[i];
+            q.type = types[i];
+            q.pointer = pointers[i];
+        }
     }
 
 
@@ -125,13 +138,15 @@ public class Main extends PApplet {
             }
 
             if (mousePressed) {
-                for(int i = 0; i < quantSquares; i++){
-                    if(Var.squares.get(i).isMouseOver()){
-                        squareBeingEdited = i;
-                        break;
+                for(int i = 0; i < quantSquares; i++) {
+                    if (i + firstIndex < quantSquares) {
+                        if (Var.squares.get(i + firstIndex).isMouseOver()) {
+                            squareBeingEdited = i + firstIndex;
+                            break;
+                        }
                     }
+                    buttomClicked();
                 }
-                buttomClicked();
                 if(Var.squares.get(squareBeingEdited).isMouseOverSendData()){
                     Var.squares.get(squareBeingEdited).sendDataClicked();
                     server.sendData(squareBeingEdited);
@@ -142,7 +157,7 @@ public class Main extends PApplet {
 
     void buttomClicked(){
         if(isWithin(initialPointsButtom[0], initialPointsButtom[1] , initialPointsButtom[0]+tamBotao,  initialPointsButtom[1] + tamBotao)){
-            if(firstIndex-3 >= 0) {
+            if(firstIndex-3 > -1) {
                 firstIndex = firstIndex - 3;
                 {
                     initialPointsButtom = new int[]{(windowWidth - round(windowWidth * 0.2f)) - tamBotao, usableHeight};
@@ -163,8 +178,7 @@ public class Main extends PApplet {
                     delay(200);
                 }
             }
-        }
-        if(isWithin(initialPointsButtom[0], windowHeight -tamBotao, initialPointsButtom[0] + tamBotao, windowHeight)){
+        }else if(isWithin(initialPointsButtom[0], windowHeight -tamBotao, initialPointsButtom[0] + tamBotao, windowHeight)){
             if(firstIndex + 9 < quantSquares){
                 firstIndex = firstIndex+3;
                 {
